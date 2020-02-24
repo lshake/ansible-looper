@@ -1,0 +1,14 @@
+---
+- hosts: all
+  tasks:
+    - name: get the date
+      command: "date"
+      register: current_date
+
+    - name: pause for random time
+      pause:
+        seconds: "{{ 60 | random }}"
+
+    - name: debug date
+      debug:
+        var: current_date.stdout
