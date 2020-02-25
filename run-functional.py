@@ -6,7 +6,7 @@ import re
 import time
 from termcolor import colored
 
-test_directory = "/Users/lshakesp/projects/ansible/ansible-runner/functional_tests"
+test_directory = "./functional_tests"
 ansible_tests_list = []
 ansible_run_list = []
 tests_list = []
@@ -27,7 +27,8 @@ def get_tests(test_directory):
 def launch_ansible_test(test_to_launch, test_directory, test_type):
     (t, r) = ansible_runner.interface.run_async(
         private_data_dir=test_directory + '/' + test_to_launch,
-        playbook=test_type + '.yml')
+        playbook=test_type + '.yml',
+        rotate_artifacts=maxfailures+1)
     return({
         'thread': t,
         'runner': r,
@@ -85,7 +86,7 @@ def check_ansible_loop(run_list, iteration):
             else:
                 if test['failures'] >= maxfailures:
                     run_list.remove(test)
-                    print(colored("Error: {} - {}: {}: iteration {} Max failures exceeded, removeing test".format(
+                    print(colored("Error : {} - {}: {}: iteration {} Max failures exceeded, removeing test".format(
                         test['test_name'], test['runner'].status,
                         test['test_type'], test['iteration']), 'red')
                     )
