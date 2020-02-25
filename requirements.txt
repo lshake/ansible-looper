@@ -1,0 +1,2 @@
+ansible-runner==1.4.4
+termcolor==1.1.0
