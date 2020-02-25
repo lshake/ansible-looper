@@ -11,6 +11,7 @@ ansible_tests_list = []
 ansible_run_list = []
 tests_list = []
 iterations = 20
+maxfailures = 3
 debug = False
 
 
@@ -24,7 +25,7 @@ def get_tests(test_directory):
 
 
 def launch_ansible_test(test_to_launch, test_directory, test_type):
-    (t, r) = ansible_runner.run_async(
+    (t, r) = ansible_runner.interface.run_async(
         private_data_dir=test_directory + '/' + test_to_launch,
         playbook=test_type + '.yml')
     return({
@@ -45,7 +46,8 @@ def launch_ansible_tests(list_of_tests, test_type):
             'test_name': launched_test['test'],
             'test_directory': launched_test['test_directory'],
             'test_type': test_type,
-            'iteration': 1
+            'iteration': 1,
+            'failures': 0
         })
         print(colored("Launching : {} - {} :{}: iteration {}".format(
             test, launched_test['runner'].status,
@@ -81,11 +83,22 @@ def check_ansible_loop(run_list, iteration):
                         test['test_type'], test['iteration']), 'cyan')
                     )
             else:
-                run_list.remove(test)
-                print(colored("Error : {} - {} :{}: iteration {}".format(
-                    test['test_name'], test['runner'].status,
-                    test['test_type'], test['iteration']), 'red')
-                )
+                if test['failures'] >= maxfailures:
+                    run_list.remove(test)
+                    print(colored("Error: {} - {}: {}: iteration {} Max failures exceeded, removeing test".format(
+                        test['test_name'], test['runner'].status,
+                        test['test_type'], test['iteration']), 'red')
+                    )
+                else:
+                    launched_test = launch_ansible_test(
+                        test['test_name'], test_directory, test['test_type'])
+                    test['thread'] = launched_test['thread']
+                    test['runner'] = launched_test['runner']
+                    test['failures'] += 1
+                    print(colored("Re-launching : {} - {} :{}: iteration {}".format(
+                        test['test_name'], test['runner'].status,
+                        test['test_type'], test['iteration']), 'red')
+                    )
         time.sleep(2)
 
 

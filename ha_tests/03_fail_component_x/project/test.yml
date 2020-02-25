@@ -5,14 +5,14 @@
       command: "date"
       register: current_date
 
-    - name: pause for random time
-      pause:
-        seconds: "{{ 30 | random }}"
-
     - name: randomly fail
       fail:
         msg: "eeek we failed"
-      when: 10 | random > 9
+      when: 10 | random > 4
+
+    - name: pause for random time
+      pause:
+        seconds: "{{ 5 | random }}"
 
     - name: debug date
       debug:
