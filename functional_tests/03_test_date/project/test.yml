@@ -7,7 +7,7 @@
 
     - name: pause for random time
       pause:
-        seconds: "{{ 30 | random }}"
+        seconds: "{{ 3 | random }}"
 
     - name: randomly fail
       fail:
