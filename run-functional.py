@@ -12,6 +12,7 @@ ansible_run_list = []
 tests_list = []
 iterations = 20
 maxfailures = 3
+keepartifacts = 5
 debug = False
 
 
@@ -24,11 +25,12 @@ def get_tests(test_directory):
     return(sorted(tests))
 
 
-def launch_ansible_test(test_to_launch, test_directory, test_type):
+def launch_ansible_test(test_to_launch, test_directory, test_type, invocation, failure_count):
     (t, r) = ansible_runner.interface.run_async(
         private_data_dir=test_directory + '/' + test_to_launch,
         playbook=test_type + '.yml',
-        rotate_artifacts=maxfailures+1)
+        rotate_artifacts=keepartifacts,
+        ident=test_type + '_' + str(invocation) + '_' + str(failure_count))
     return({
         'thread': t,
         'runner': r,
@@ -40,7 +42,7 @@ def launch_ansible_test(test_to_launch, test_directory, test_type):
 def launch_ansible_tests(list_of_tests, test_type):
     running_tests = []
     for test in list_of_tests:
-        launched_test = launch_ansible_test(test, test_directory, test_type)
+        launched_test = launch_ansible_test(test, test_directory, test_type, 1, 0)
         running_tests.append({
             'thread': launched_test['thread'],
             'runner': launched_test['runner'],
@@ -68,11 +70,11 @@ def check_ansible_loop(run_list, iteration):
                         test['test_type'], test['iteration']), 'green')
                     )
                 else:
+                    test['iteration'] += 1
                     launched_test = launch_ansible_test(
-                        test['test_name'], test_directory, test['test_type'])
+                        test['test_name'], test_directory, test['test_type'], test['iteration'], test['failures'])
                     test['thread'] = launched_test['thread']
                     test['runner'] = launched_test['runner']
-                    test['iteration'] += 1
                     print(colored("Launching : {} - {} :{}: iteration {}".format(
                         test['test_name'], test['runner'].status,
                         test['test_type'], test['iteration']), 'yellow')
@@ -91,14 +93,14 @@ def check_ansible_loop(run_list, iteration):
                         test['test_type'], test['iteration']), 'red')
                     )
                 else:
+                    test['failures'] += 1
                     launched_test = launch_ansible_test(
-                        test['test_name'], test_directory, test['test_type'])
+                        test['test_name'], test_directory, test['test_type'], test['iteration'], test['failures'])
                     test['thread'] = launched_test['thread']
                     test['runner'] = launched_test['runner']
-                    test['failures'] += 1
                     print(colored("Re-launching : {} - {} :{}: iteration {}".format(
                         test['test_name'], test['runner'].status,
-                        test['test_type'], test['iteration']), 'red')
+                        test['test_type'], test['iteration']), 'magenta')
                     )
         time.sleep(2)
 
