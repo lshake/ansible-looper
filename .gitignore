@@ -36,4 +36,5 @@ ansible.cfg
 files/*id_rsa
 
 # don't store ansible-runner artifacts
-artifacts
+*/*/artifacts
+*/*/inventory/looper
