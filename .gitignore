@@ -38,3 +38,4 @@ files/*id_rsa
 # don't store ansible-runner artifacts
 */*/artifacts
 */*/inventory/looper
+errors
