@@ -16,6 +16,7 @@ iterations = 20
 maxfailures = 3
 keepartifacts = 5
 debug = False
+config = None
 
 def parse_command_line():
     parser = argparse.ArgumentParser(
@@ -40,9 +41,13 @@ def get_tests(test_directory):
 
 
 def launch_ansible_test(test_to_launch, test_directory, test_type, invocation, failure_count):
+
+    inventory = config.get('General', 'inventory',fallback=None) if config else None
+
     (t, r) = ansible_runner.interface.run_async(
         private_data_dir=test_directory + '/' + test_to_launch,
         playbook=test_type + '.yml',
+        inventory=inventory,
         rotate_artifacts=keepartifacts,
         ident=test_type + '_' + str(invocation) + '_' + str(failure_count))
     return({
