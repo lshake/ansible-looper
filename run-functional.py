@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import argparse
+import configparser
 import ansible_runner
 import os
 import re
@@ -15,6 +17,18 @@ maxfailures = 3
 keepartifacts = 5
 debug = False
 
+def parse_command_line():
+    parser = argparse.ArgumentParser(
+        description='Run ansible playbooks concurrently and with loops')
+    parser.add_argument('-c', '--config', dest='config_file',
+                        required=False, action='store', help='Config file in ini format')
+
+    return parser.parse_args()
+
+def parse_config_file(config_file):
+    config = configparser.ConfigParser()
+    config.read(config_file)
+    return config
 
 def get_tests(test_directory):
     directories = os.listdir(test_directory)
@@ -106,6 +120,11 @@ def check_ansible_loop(run_list, iteration):
 
 
 if __name__ == '__main__':
+    args = parse_command_line()
+    if args.config_file:
+        config = parse_config_file(args.config_file)
+        test_directory = config.get('General', 'test_directory', fallback='./functional_tests')
+
     ansible_tests_list = get_tests(test_directory)
     ansible_run_list = launch_ansible_tests(ansible_tests_list, 'setup')
     check_ansible_loop(ansible_run_list, 1)
