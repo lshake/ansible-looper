@@ -62,7 +62,7 @@ def launch_ansible_test(test_to_launch, test_directory, test_type, invocation, f
 
     (t, r) = ansible_runner.interface.run_async(
         private_data_dir=private_data_dir,
-        playbook=test_directory + '/' + test_to_launch + '/project/' + test_type + '.yml',
+        playbook=test_directory + '/' + test_to_launch + '/' + test_type + '.yml',
         inventory=inventory,
         extravars=extravars,
         rotate_artifacts=keepartifacts,
