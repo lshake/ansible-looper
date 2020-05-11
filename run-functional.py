@@ -170,6 +170,7 @@ if __name__ == '__main__':
         config = parse_config_file(args.config_file)
         test_directory = config.get('General', 'test_directory', fallback='./functional_tests')
         iterations = config.getint('General', 'iterations', fallback=20)
+        keepartifacts = iterations
 
     ansible_tests_list = get_tests(test_directory)
     ansible_run_list = launch_ansible_tests(ansible_tests_list, 'setup')
