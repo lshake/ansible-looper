@@ -3,6 +3,7 @@ test_directory = ./functional_tests
 inventory = /path/to/ansible/inventory
 extra_vars = /path/to/local/ansible/extra_vars
 iterations = 20
+max_failures = 3
 output_dir = /path/to/directory/to/store/output
 
 [Ansible Runner Settings]

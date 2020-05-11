@@ -25,9 +25,10 @@ The following sections are defined:
 | inventory       | Path to Ansible inventory
 | extra_vars      | Path to file YAML file containing extra Ansible variables
 | iterations      | Number of iterations to run
+| max_failures    | Number of failed iterations after which a test is disabled
 | output_dir      | Directory to store all output of the test runs
 
 
 **Ansible Runner Settings:**
 
-This section contain key-value pairs corresponding to the Ansible Runner library [Settings](https://ansible-runner.readthedocs.io/en/latest/intro.html#env-settings-settings-for-runner-itself). 
+This section contain key-value pairs corresponding to the Ansible Runner library [Settings](https://ansible-runner.readthedocs.io/en/latest/intro.html#env-settings-settings-for-runner-itself).
