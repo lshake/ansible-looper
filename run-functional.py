@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+import ast
 import configparser
 import ansible_runner
 import os
@@ -55,6 +56,28 @@ def launch_ansible_test(test_to_launch, test_directory, test_type, invocation, f
         os.makedirs(private_data_dir, mode=0o700, exist_ok=True)
     else:
         private_data_dir = test_directory + '/' + test_to_launch
+
+    if config and config.has_section('Ansible Runner Settings'):
+        settings = dict(config.items('Ansible Runner Settings'))
+    else:
+        settings = None
+
+     # ansible_runner.interface.run _SHOULD_ take a dict here. But it doesn't )-:
+     # So instead we'll write a yaml file into the output dir, this seem to work...
+    if settings and output_dir:
+
+        # first convert from strings
+        for v in settings:
+            try:
+                settings[v] = ast.literal_eval(settings[v])
+            except ValueError:
+                pass
+
+        os.makedirs(private_data_dir + '/env', mode=0o700, exist_ok=True)
+        if os.path.exists(private_data_dir + '/env/settings'):
+            os.remove(private_data_dir + '/env/settings')
+        with open(private_data_dir + '/env/settings', 'w') as f:
+            yaml.safe_dump(settings, f)
 
     if extra_vars_file:
         with open(extra_vars_file, 'r') as f:
