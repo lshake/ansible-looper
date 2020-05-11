@@ -44,16 +44,25 @@ def get_tests(test_directory):
 def launch_ansible_test(test_to_launch, test_directory, test_type, invocation, failure_count):
 
     inventory = config.get('General', 'inventory', fallback=None) if config else None
+
     extra_vars_file = config.get('General', 'extra_vars', fallback=None) if config else None
     extravars = None
+
+    private_data_dir = test_directory + '/' + test_to_launch
+    output_dir = config.get('General', 'output_dir', fallback=None) if config else None
+    if output_dir:
+        private_data_dir = output_dir + '/' + test_to_launch
+        os.makedirs(private_data_dir, mode=0o700, exist_ok=True)
+    else:
+        private_data_dir = test_directory + '/' + test_to_launch
 
     if extra_vars_file:
         with open(extra_vars_file, 'r') as f:
             extravars = yaml.safe_load(f)
 
     (t, r) = ansible_runner.interface.run_async(
-        private_data_dir=test_directory + '/' + test_to_launch,
-        playbook=test_type + '.yml',
+        private_data_dir=private_data_dir,
+        playbook=test_directory + '/' + test_to_launch + '/project/' + test_type + '.yml',
         inventory=inventory,
         extravars=extravars,
         rotate_artifacts=keepartifacts,
