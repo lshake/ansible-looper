@@ -55,7 +55,7 @@ def launch_ansible_test(test_to_launch, test_directory, test_type, invocation, f
         private_data_dir = output_dir + '/' + test_to_launch
         os.makedirs(private_data_dir, mode=0o700, exist_ok=True)
     else:
-        private_data_dir = test_directory + '/' + test_to_launch
+        pass
 
     if config and config.has_section('Ansible Runner Settings'):
         settings = dict(config.items('Ansible Runner Settings'))
