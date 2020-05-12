@@ -29,18 +29,24 @@ def parse_command_line():
     return parser.parse_args()
 
 def parse_config_file(config_file):
-    config = configparser.ConfigParser()
+    config = configparser.ConfigParser(allow_no_value=True)
     config.read(config_file)
     return config
 
 def get_tests(test_directory):
-    directories = os.listdir(test_directory)
-    tests = []
-    for i in directories:
-        if re.match('^[0-9][0-9].*', i):
-            tests.append(i)
-    return(sorted(tests))
 
+    tests = []
+    if config and config.has_section('Enabled Functional Tests'):
+        enabled_tests = config.items('Enabled Functional Tests')
+        for t in enabled_tests:
+            tests.append(t[0])
+    else:
+        directories = os.listdir(test_directory)
+        for i in directories:
+            if re.match('^[0-9][0-9].*', i):
+                tests.append(i)
+
+    return sorted(tests)
 
 def launch_ansible_test(test_to_launch, test_directory, test_type, invocation, failure_count):
 
