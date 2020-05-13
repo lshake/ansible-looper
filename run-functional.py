@@ -18,9 +18,9 @@ iterations = 20
 maxfailures = 3
 keepartifacts = 5
 debug = False
-config = None
 
 def parse_command_line():
+    """Parses command line and returns a dict with commandline optinons"""
     parser = argparse.ArgumentParser(
         description='Run ansible playbooks concurrently and with loops')
     parser.add_argument('-c', '--config', dest='config_file',
@@ -29,9 +29,10 @@ def parse_command_line():
     return parser.parse_args()
 
 def parse_config_file(config_file):
-    config = configparser.ConfigParser(allow_no_value=True)
-    config.read(config_file)
-    return config
+    """Parses config file, returning a ConfigParser object"""
+    my_config = configparser.ConfigParser(allow_no_value=True)
+    my_config.read(config_file)
+    return my_config
 
 def get_tests(test_directory):
 
@@ -60,8 +61,6 @@ def launch_ansible_test(test_to_launch, test_directory, test_type, invocation, f
     if output_dir:
         private_data_dir = output_dir + '/' + test_to_launch
         os.makedirs(private_data_dir, mode=0o700, exist_ok=True)
-    else:
-        pass
 
     if config and config.has_section('Ansible Runner Settings'):
         settings = dict(config.items('Ansible Runner Settings'))
@@ -172,8 +171,9 @@ def check_ansible_loop(run_list, iteration):
 
 if __name__ == '__main__':
     args = parse_command_line()
-    if args.config_file:
-        config = parse_config_file(args.config_file)
+    config = parse_config_file(args.config_file) if args.config_file else None
+
+    if config:
         test_directory = config.get('General', 'test_directory', fallback='./functional_tests')
         iterations = config.getint('General', 'iterations', fallback=20)
         keepartifacts = iterations
