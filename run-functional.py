@@ -54,7 +54,7 @@ def get_tests(test_directory):
     return sorted(tests)
 
 
-def get_tests_from_plan(plan_basename):
+def get_tests_from_plan(plans):
     """Read the specified plan, returning list of tests to run. """
 
     plans_dir = config.get('General', 'plans_directory',
@@ -64,22 +64,14 @@ def get_tests_from_plan(plan_basename):
     if not plans_dir:
         plans_dir = 'plans'
 
-    file_path = get_filename(plans_dir, plan_basename)
+    tests = []
+    for plan in plans.split(sep=','):
+        file_path = get_filename(plans_dir, plan)
 
-    with open(file_path, 'r') as f:
-        plan = yaml.safe_load(f)
+        with open(file_path, 'r') as f:
+            plan = yaml.safe_load(f)
 
-    tests = plan['functional_tests']
-
-    if config and config.has_section('Enabled Functional Tests'):
-        enabled_tests = config.items('Enabled Functional Tests')
-        for test in enabled_tests:
-            tests.append(test[0])
-    else:
-        directories = os.listdir(test_directory)
-        for i in directories:
-            if re.match('^[0-9][0-9].*', i):
-                tests.append(i)
+        tests.extend(plan['functional_tests'])
 
     return sorted(tests)
 
@@ -97,7 +89,6 @@ def get_filename(directory='.', base_name=None):
 
 
 def launch_ansible_test(test_to_launch, test_directory, test_type, invocation, failure_count):
-
     inventory = config.get('General', 'inventory', fallback=None) if config else None
 
     extra_vars_file = config.get('General', 'extra_vars', fallback=None) if config else None
@@ -228,7 +219,7 @@ if __name__ == '__main__':
 
     # If plan is given on command line, read tests from there
     if args.test_plan:
-        ansible_test_list = get_tests_from_plan(args.test_plan)
+        ansible_tests_list = get_tests_from_plan(args.test_plan)
     else:
         # Get test from what is in config file,
         # or otherwise just run all there is
