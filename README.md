@@ -13,7 +13,7 @@ The run-functional.py script executes a number of functional tests in parallel.
 Configuration file, described below.
 
 **-p PLAN**  
-Comma-seperated list of test plans, described below.  
+Comma-seperated list of test plans, described below. The testing framework will look for plans in the _plans_directory_ specified in the config file.   
 It should be noted that specifying a test plan will override any enabled tests in the config file.
 
 ## HA Testing
@@ -54,3 +54,8 @@ functional_tests:
   - another_test
 ```
 It should be noted that specifying a plan file on the command line has precedence over any tests specified in the config file.
+
+## Example
+```
+./run-functional.py -c ../config.ini -p openstack
+```
