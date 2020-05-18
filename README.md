@@ -23,6 +23,7 @@ The following sections are defined:
 |-----            |----------  |
 | test_directory  | Directory containing the tests
 | inventory       | Path to Ansible inventory
+| report          | File-name where report will be written
 | extra_vars      | Path to file YAML file containing extra Ansible variables
 | iterations      | Number of iterations to run
 | max_failures    | Number of failed iterations after which a test is disabled
