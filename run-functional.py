@@ -10,6 +10,8 @@ import time
 from termcolor import colored
 import yaml
 
+from report import Report
+
 test_directory = "./functional_tests"
 ansible_tests_list = []
 ansible_run_list = []
@@ -162,9 +164,24 @@ def launch_ansible_tests(list_of_tests, test_type):
 
 
 def check_ansible_loop(run_list, iteration):
+    """Checks on running tests and re-launces them required number of times"""
+
+    # Initialize report
+    # Assuming all tests here are in the same stage (setup or test)
+    # A report will only be created for the test stage
+    if run_list[0]['test_type'] == 'test':
+        if config:
+            report_file = config.get('General', 'report', fallback=None)
+        else:
+            report_file = None
+        report = Report(run_list, report_file)
+    else:
+        report = Report()
+
     while run_list:
         for test in run_list:
             if test['runner'].status == 'successful':
+                report.add_result(test['test_name'], successful=True)
                 if test['iteration'] >= iteration:
                     run_list.remove(test)
                     print(colored("Complete : {} - {} :{}: iteration {}".format(
@@ -188,6 +205,7 @@ def check_ansible_loop(run_list, iteration):
                         test['test_type'], test['iteration']), 'cyan')
                     )
             else:
+                report.add_result(test['test_name'], successful=False)
                 if test['failures'] >= maxfailures:
                     run_list.remove(test)
                     print(colored("Error : {} - {}: {}: iteration {} Max failures exceeded, removeing test".format(

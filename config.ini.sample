@@ -2,6 +2,7 @@
 test_directory = ./functional_tests
 plans_directory = plans
 inventory = /path/to/ansible/inventory
+report    = ./report.csv
 extra_vars = /path/to/local/ansible/extra_vars
 iterations = 20
 max_failures = 3
