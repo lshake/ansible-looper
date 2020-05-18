@@ -18,32 +18,77 @@ iterations = 20
 maxfailures = 3
 keepartifacts = 5
 debug = False
-config = None
 
 def parse_command_line():
+    """Parses command line and returns a dict with commandline optinons"""
     parser = argparse.ArgumentParser(
-        description='Run ansible playbooks concurrently and with loops')
+        description='Run ansible playbooks concurrently and with loops',
+        formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-c', '--config', dest='config_file',
                         required=False, action='store', help='Config file in ini format')
+    parser.add_argument('-p', '--plan', dest='test_plan',
+                        required=False, action='store',
+                        help='Test Plan to use.\nDo note that this option will override any Enabled Tests in the config file')
 
     return parser.parse_args()
 
 def parse_config_file(config_file):
-    config = configparser.ConfigParser()
-    config.read(config_file)
-    return config
+    """Parses config file, returning a ConfigParser object"""
+    my_config = configparser.ConfigParser(allow_no_value=True)
+    my_config.read(config_file)
+    return my_config
 
 def get_tests(test_directory):
-    directories = os.listdir(test_directory)
+
     tests = []
-    for i in directories:
-        if re.match('^[0-9][0-9].*', i):
-            tests.append(i)
-    return(sorted(tests))
+    if config and config.has_section('Enabled Functional Tests'):
+        enabled_tests = config.items('Enabled Functional Tests')
+        for t in enabled_tests:
+            tests.append(t[0])
+    else:
+        directories = os.listdir(test_directory)
+        for i in directories:
+            if re.match('^[0-9][0-9].*', i):
+                tests.append(i)
+
+    return sorted(tests)
+
+
+def get_tests_from_plan(plans):
+    """Read the specified plan, returning list of tests to run. """
+
+    plans_dir = config.get('General', 'plans_directory',
+                           fallback=None) if config else None
+
+    # fallback
+    if not plans_dir:
+        plans_dir = 'plans'
+
+    tests = []
+    for plan in plans.split(sep=','):
+        file_path = get_filename(plans_dir, plan)
+
+        with open(file_path, 'r') as f:
+            plan = yaml.safe_load(f)
+
+        tests.extend(plan['functional_tests'])
+
+    return sorted(tests)
+
+
+def get_filename(directory='.', base_name=None):
+    """ Checks for a file with both .yaml and .yml extension and returns the
+    one that exists."""
+
+    for ext in ['.yaml', '.yml']:
+        f = os.path.join(directory, base_name + ext)
+        if os.path.exists(f):
+            return f
+
+    raise FileNotFoundError('Could not found plan in' + directory)
 
 
 def launch_ansible_test(test_to_launch, test_directory, test_type, invocation, failure_count):
-
     inventory = config.get('General', 'inventory', fallback=None) if config else None
 
     extra_vars_file = config.get('General', 'extra_vars', fallback=None) if config else None
@@ -54,8 +99,6 @@ def launch_ansible_test(test_to_launch, test_directory, test_type, invocation, f
     if output_dir:
         private_data_dir = output_dir + '/' + test_to_launch
         os.makedirs(private_data_dir, mode=0o700, exist_ok=True)
-    else:
-        pass
 
     if config and config.has_section('Ansible Runner Settings'):
         settings = dict(config.items('Ansible Runner Settings'))
@@ -166,14 +209,22 @@ def check_ansible_loop(run_list, iteration):
 
 if __name__ == '__main__':
     args = parse_command_line()
-    if args.config_file:
-        config = parse_config_file(args.config_file)
+    config = parse_config_file(args.config_file) if args.config_file else None
+
+    if config:
         test_directory = config.get('General', 'test_directory', fallback='./functional_tests')
         iterations = config.getint('General', 'iterations', fallback=20)
         keepartifacts = iterations
         maxfailures = config.getint('General', 'max_failures', fallback=3)
 
-    ansible_tests_list = get_tests(test_directory)
+    # If plan is given on command line, read tests from there
+    if args.test_plan:
+        ansible_tests_list = get_tests_from_plan(args.test_plan)
+    else:
+        # Get test from what is in config file,
+        # or otherwise just run all there is
+        ansible_tests_list = get_tests(test_directory)
+
     ansible_run_list = launch_ansible_tests(ansible_tests_list, 'setup')
     check_ansible_loop(ansible_run_list, 1)
     ansible_run_list = launch_ansible_tests(ansible_tests_list, 'test')
