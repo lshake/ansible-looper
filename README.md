@@ -6,7 +6,7 @@ Simple python wrapper around ansible-runner for performing tests in parallel and
 
 The run-functional.py script executes a number of functional tests in parallel.
 
-**usage: run-functional.py [-c CONFIGFILE] [-p PLAN[,PLAN]...]**
+**usage: run-functional.py -c CONFIGFILE [-p PLAN[,PLAN]...]**
 
 **OPTIONS**
 **-c --config**  
@@ -27,13 +27,13 @@ The following sections are defined:
 
 **General:**
 
-| Key             | Description|
-|-----            |----------  |
+| Key             | Description| Default
+|-----            |----------  | ---
+| extra_vars      | Path to YAML file containing Ansible extra-vars | extra_vars.yaml
 | test_directory  | Directory containing the tests
 | plans_directory | Directory containing test plans
 | inventory       | Path to Ansible inventory
 | report          | File-name where report will be written
-| extra_vars      | Path to file YAML file containing extra Ansible variables
 | iterations      | Number of iterations to run
 | max_failures    | Number of failed iterations after which a test is disabled
 | output_dir      | Directory to store all output of the test runs

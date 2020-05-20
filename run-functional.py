@@ -27,7 +27,8 @@ def parse_command_line():
         description='Run ansible playbooks concurrently and with loops',
         formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-c', '--config', dest='config_file',
-                        required=False, action='store', help='Config file in ini format')
+                        required=True, action='store',
+                        help='Config file in ini format')
     parser.add_argument('-p', '--plan', dest='test_plan',
                         required=False, action='store',
                         help='Test Plan to use.\nDo note that this option will override any Enabled Tests in the config file')
@@ -93,8 +94,13 @@ def get_filename(directory='.', base_name=None):
 def launch_ansible_test(test_to_launch, test_directory, test_type, invocation, failure_count):
     inventory = config.get('General', 'inventory', fallback=None) if config else None
 
-    extra_vars_file = config.get('General', 'extra_vars', fallback=None) if config else None
+    extravars_file = config.get('General',
+                                'extra_vars',
+                                fallback='extra_vars.yaml')
     extravars = None
+    if os.path.exists(extravars_file):
+        with open(extravars_file, 'r') as f:
+            extravars = yaml.safe_load(f)
 
     private_data_dir = test_directory + '/' + test_to_launch
     output_dir = config.get('General', 'output_dir', fallback=None) if config else None
@@ -123,10 +129,6 @@ def launch_ansible_test(test_to_launch, test_directory, test_type, invocation, f
             os.remove(private_data_dir + '/env/settings')
         with open(private_data_dir + '/env/settings', 'w') as f:
             yaml.safe_dump(settings, f)
-
-    if extra_vars_file:
-        with open(extra_vars_file, 'r') as f:
-            extravars = yaml.safe_load(f)
 
     (t, r) = ansible_runner.interface.run_async(
         private_data_dir=private_data_dir,
