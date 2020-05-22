@@ -148,10 +148,10 @@ def launch_ansible_test(test_to_launch, test_directory, test_type, invocation, f
         with open(private_data_dir + '/env/settings', 'w') as f:
             yaml.safe_dump(settings, f)
 
-        playbook = get_filename(os.path.join(test_directory,
-                                             'functional_tests',
-                                             test_to_launch),
-                                test_type)
+    playbook = get_filename(os.path.join(test_directory,
+                                         'functional_tests',
+                                         test_to_launch),
+                            test_type)
 
     (t, r) = ansible_runner.interface.run_async(
         private_data_dir=private_data_dir,
