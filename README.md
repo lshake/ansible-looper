@@ -30,9 +30,9 @@ The following sections are defined:
 | Key             | Description| Default
 |-----            |----------  | ---
 | extra_vars      | Path to YAML file containing Ansible extra-vars | extra_vars.yaml
+|inventory       | Path to Ansible inventory | %(test_directory)s/inventory/hosts
 | test_directory  | Directory containing the tests
-| plans_directory | Directory containing test plans
-| inventory       | Path to Ansible inventory
+| plans_directory | Directory containing test plans |
 | report          | File-name where report will be written
 | iterations      | Number of iterations to run
 | max_failures    | Number of failed iterations after which a test is disabled

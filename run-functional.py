@@ -3,6 +3,7 @@
 import argparse
 import ast
 import configparser
+import sys
 import ansible_runner
 import os
 import re
@@ -37,8 +38,17 @@ def parse_command_line():
 
 def parse_config_file(config_file):
     """Parses config file, returning a ConfigParser object"""
+
+    mandatory_options = ['test_directory']
+
     my_config = configparser.ConfigParser(allow_no_value=True)
     my_config.read(config_file)
+
+    mandatory_options = ['test_directory']
+    for option in mandatory_options:
+        if not my_config.has_option('General', option):
+            sys.exit('Option %s missing in configuration file' % option)
+
     return my_config
 
 def get_tests(test_directory):
@@ -92,7 +102,13 @@ def get_filename(directory='.', base_name=None):
 
 
 def launch_ansible_test(test_to_launch, test_directory, test_type, invocation, failure_count):
-    inventory = config.get('General', 'inventory', fallback=None) if config else None
+    inventory = config.get('General', 'inventory', fallback=None)
+    if not inventory:
+        inventory = os.path.join(test_directory, 'inventory/hosts')
+
+    # Finally, if the inventory really doesn't exist, don't pass it along
+    if not os.path.exists(inventory):
+        inventory = None
 
     extravars_file = config.get('General',
                                 'extra_vars',
@@ -130,9 +146,14 @@ def launch_ansible_test(test_to_launch, test_directory, test_type, invocation, f
         with open(private_data_dir + '/env/settings', 'w') as f:
             yaml.safe_dump(settings, f)
 
+        playbook = get_filename(os.path.join(test_directory,
+                                             'functional_tests',
+                                             test_to_launch),
+                                test_type)
+
     (t, r) = ansible_runner.interface.run_async(
         private_data_dir=private_data_dir,
-        playbook=test_directory + '/' + test_to_launch + '/' + test_type + '.yml',
+        playbook=playbook,
         inventory=inventory,
         extravars=extravars,
         rotate_artifacts=keepartifacts,
