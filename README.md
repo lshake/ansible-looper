@@ -31,12 +31,13 @@ The following sections are defined:
 |-----            |----------  | ---
 | extra_vars      | Path to YAML file containing Ansible extra-vars | extra_vars.yaml
 |inventory       | Path to Ansible inventory | %(test_directory)s/inventory/hosts
-| test_directory  | Directory containing the tests
-| plans_directory | Directory containing test plans |
+| iterations      | Number of iterations to run | 20
+| max_failures    | Number of failed iterations after which a test is disabled| 3
+| output_directory| Directory to store all output of the test runs | %(test_directory)s
+| plans_directory | Directory containing test plans | %(test_directory)s/plans
+| test_directory  | Directory containing the tests. <br> This is the directory comtaining the _funcional_tests_ subdirectory | - / required
 | report          | File-name where report will be written
-| iterations      | Number of iterations to run
-| max_failures    | Number of failed iterations after which a test is disabled
-| output_dir      | Directory to store all output of the test runs
+
 
 
 **Ansible Runner Settings:**  

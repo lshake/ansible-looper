@@ -71,11 +71,13 @@ def get_tests_from_plan(plans):
     """Read the specified plan, returning list of tests to run. """
 
     plans_dir = config.get('General', 'plans_directory',
-                           fallback=None) if config else None
+                           fallback=None)
 
     # fallback
     if not plans_dir:
-        plans_dir = 'plans'
+        plans_dir = os.path.join(config.get('General',
+                                            'test_directory'),
+                                 'plans')
 
     tests = []
     for plan in plans.split(sep=','):
@@ -119,7 +121,7 @@ def launch_ansible_test(test_to_launch, test_directory, test_type, invocation, f
             extravars = yaml.safe_load(f)
 
     private_data_dir = test_directory + '/' + test_to_launch
-    output_dir = config.get('General', 'output_dir', fallback=None) if config else None
+    output_dir = config.get('General', 'output_directory', fallback=None)
     if output_dir:
         private_data_dir = output_dir + '/' + test_to_launch
         os.makedirs(private_data_dir, mode=0o700, exist_ok=True)
