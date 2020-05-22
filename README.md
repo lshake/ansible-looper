@@ -35,10 +35,8 @@ The following sections are defined:
 | max_failures    | Number of failed iterations after which a test is disabled| 3
 | output_directory| Directory to store all output of the test runs | %(test_directory)s
 | plans_directory | Directory containing test plans | %(test_directory)s/plans
+| report          | File-name where report will be written | report.csv
 | test_directory  | Directory containing the tests. <br> This is the directory comtaining the _funcional_tests_ subdirectory | - / required
-| report          | File-name where report will be written
-
-
 
 **Ansible Runner Settings:**  
 This section contain key-value pairs corresponding to the Ansible Runner library [Settings](https://ansible-runner.readthedocs.io/en/latest/intro.html#env-settings-settings-for-runner-itself).
