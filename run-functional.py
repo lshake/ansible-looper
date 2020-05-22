@@ -51,21 +51,22 @@ def parse_config_file(config_file):
 
     return my_config
 
-def get_tests(test_directory):
+
+def get_tests_from_config():
+    """Read test list from config file """
 
     tests = []
-    if config and config.has_section('Enabled Functional Tests'):
-        enabled_tests = config.items('Enabled Functional Tests')
-        for t in enabled_tests:
-            tests.append(t[0])
-    else:
-        directories = os.listdir(test_directory)
-        for i in directories:
-            if re.match('^[0-9][0-9].*', i):
-                tests.append(i)
+    enabled_tests = config.items('Enabled Functional Tests')
+    for test in enabled_tests:
+        tests.append(test[0])
 
-    return sorted(tests)
+    return tests
 
+
+def get_tests_from_directory():
+    """Return all tests in the functional_tests directory"""
+    return os.listdir(os.path.join(config.get('General', 'test_directory'),
+                                   'functional_tests'))
 
 def get_tests_from_plan(plans):
     """Read the specified plan, returning list of tests to run. """
@@ -263,10 +264,15 @@ if __name__ == '__main__':
     # If plan is given on command line, read tests from there
     if args.test_plan:
         ansible_tests_list = get_tests_from_plan(args.test_plan)
+
+    # Else take tests from config file
+    elif config.has_section('Enabled Functional Tests'):
+        ansible_tests_list = get_tests_from_config()
+
+    # If none of the above, just run all tests in the
+    # functional-tests directory
     else:
-        # Get test from what is in config file,
-        # or otherwise just run all there is
-        ansible_tests_list = get_tests(test_directory)
+        ansible_tests_list = get_tests_from_directory()
 
     ansible_run_list = launch_ansible_tests(ansible_tests_list, 'setup')
     check_ansible_loop(ansible_run_list, 1)
